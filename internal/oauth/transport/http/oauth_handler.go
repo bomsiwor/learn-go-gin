@@ -9,22 +9,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type oauthHandler struct {
+type OauthHandler struct {
 	usecase usecase.IOauthUseCase
 }
 
-func NewOauthHandler(usecase usecase.IOauthUseCase) *oauthHandler {
-	return &oauthHandler{
+func NewOauthHandler(usecase usecase.IOauthUseCase) *OauthHandler {
+	return &OauthHandler{
 		usecase: usecase,
 	}
 }
 
-func (handler *oauthHandler) Router(r *gin.RouterGroup) {
+func (handler *OauthHandler) Router(r *gin.RouterGroup) {
 	groupRouter := r.Group("/api/v1")
 	groupRouter.POST("/oauths", handler.Login)
 }
 
-func (handler *oauthHandler) Login(ctx *gin.Context) {
+func (handler *OauthHandler) Login(ctx *gin.Context) {
 	var requestData dto.LoginRequest
 
 	// Catch login request data
