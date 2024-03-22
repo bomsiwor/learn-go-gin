@@ -9,24 +9,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type registerHandler struct {
+type RegisterHandler struct {
 	uc registerUsecase.IRegisterUsecase
 }
 
 // Constructor for handler
-func NewRegisterHandler(uc registerUsecase.IRegisterUsecase) *registerHandler {
-	return &registerHandler{
+func NewRegisterHandler(uc registerUsecase.IRegisterUsecase) *RegisterHandler {
+	return &RegisterHandler{
 		uc: uc,
 	}
 }
 
 // Routing for register handler
-func (handler *registerHandler) Router(r *gin.RouterGroup) {
+func (handler *RegisterHandler) Router(r *gin.RouterGroup) {
 	r.POST("api/v1/register", handler.Register)
 }
 
 // Function for handling register
-func (handler *registerHandler) Register(ctx *gin.Context) {
+func (handler *RegisterHandler) Register(ctx *gin.Context) {
 	// Validasi input
 
 	// Bind dto with request

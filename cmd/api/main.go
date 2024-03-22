@@ -2,28 +2,34 @@ package main
 
 import (
 	"golang-bootcamp-1/config"
-	oauthRepo "golang-bootcamp-1/internal/oauth/repository"
-	oauthH "golang-bootcamp-1/internal/oauth/transport/http"
-	oauthUC "golang-bootcamp-1/internal/oauth/usecase"
-	registerH "golang-bootcamp-1/internal/register/transport/http"
-	registerUc "golang-bootcamp-1/internal/register/usecase"
 	userRepo "golang-bootcamp-1/internal/user/repository"
 	userUC "golang-bootcamp-1/internal/user/usecase"
+	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
 
 func main() {
 	r := gin.Default()
 
 	// Load env at main
-	err := godotenv.Load()
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	environtmentPath := filepath.Join(dir, ".env")
+	err = godotenv.Load(environtmentPath)
 	if err != nil {
 		panic(err.Error())
 	}
 
 	db := config.InitDB()
+	initHandler(db, r)
 
 	v1 := r.Group("api/v1")
 	{
@@ -32,25 +38,18 @@ func main() {
 		})
 	}
 
+	r.Run("127.0.0.1:8082")
+}
+
+func initHandler(db *gorm.DB, engine *gin.Engine) {
 	userRepo := userRepo.NewUserRepo(db)
 	userUC := userUC.NewUserUseCase(userRepo)
 
-	registerUc := registerUc.NewRegisterUseCase(userUC)
-	registerHandler := registerH.NewRegisterHandler(registerUc)
-	registerHandler.Router(&r.RouterGroup)
+	// Register
+	registerHn := InitializeRegisterHandler(db, userUC)
+	registerHn.Router(&engine.RouterGroup)
 
 	// Login
-	oauthClientRepo := oauthRepo.NewOauthClientRepo(db)
-	oauthAccessToken := oauthRepo.NewOauthAcces(db)
-	oauthRefreshToken := oauthRepo.NewOauthRefreshTokenRepo(db)
-	oauthUsecase := oauthUC.NewOauthUseCase(
-		oauthClientRepo,
-		oauthAccessToken,
-		oauthRefreshToken,
-		userUC,
-	)
-	oauthHandler := oauthH.NewOauthHandler(oauthUsecase)
-	oauthHandler.Router(&r.RouterGroup)
-
-	r.Run("127.0.0.1:8082")
+	oauthHn := InitializeOauthHandler(db, userUC)
+	oauthHn.Router(&engine.RouterGroup)
 }
