@@ -13,13 +13,15 @@ import (
 	"golang-bootcamp-1/internal/register/transport/http"
 	register2 "golang-bootcamp-1/internal/register/usecase"
 	"golang-bootcamp-1/internal/user/usecase"
+	"golang-bootcamp-1/pkg/mail/mailtrap"
 	"gorm.io/gorm"
 )
 
 // Injectors from wire.go:
 
 func InitializeRegisterHandler(db *gorm.DB, userUc usecase.IUserUseCase) *register.RegisterHandler {
-	iRegisterUsecase := register2.NewRegisterUseCase(userUc)
+	iMail := mail.NewMailUsecase()
+	iRegisterUsecase := register2.NewRegisterUseCase(userUc, iMail)
 	registerHandler := register.NewRegisterHandler(iRegisterUsecase)
 	return registerHandler
 }

@@ -11,6 +11,7 @@ import (
 	registerH "golang-bootcamp-1/internal/register/transport/http"
 	registerUc "golang-bootcamp-1/internal/register/usecase"
 	userUC "golang-bootcamp-1/internal/user/usecase"
+	mailUc "golang-bootcamp-1/pkg/mail/mailtrap"
 
 	"github.com/google/wire"
 	"gorm.io/gorm"
@@ -22,7 +23,7 @@ import (
 // }
 
 func InitializeRegisterHandler(db *gorm.DB, userUc userUC.IUserUseCase) *registerH.RegisterHandler {
-	wire.Build(registerH.NewRegisterHandler, registerUc.NewRegisterUseCase)
+	wire.Build(registerH.NewRegisterHandler, registerUc.NewRegisterUseCase, mailUc.NewMailUsecase)
 	return &registerH.RegisterHandler{}
 }
 
