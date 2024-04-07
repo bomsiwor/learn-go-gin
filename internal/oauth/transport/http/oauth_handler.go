@@ -20,8 +20,7 @@ func NewOauthHandler(usecase usecase.IOauthUseCase) *OauthHandler {
 }
 
 func (handler *OauthHandler) Router(r *gin.RouterGroup) {
-	groupRouter := r.Group("/api/v1")
-	groupRouter.POST("/oauths", handler.Login)
+	r.POST("/oauths", handler.Login)
 }
 
 func (handler *OauthHandler) Login(ctx *gin.Context) {

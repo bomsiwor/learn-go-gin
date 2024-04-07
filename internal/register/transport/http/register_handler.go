@@ -22,7 +22,7 @@ func NewRegisterHandler(uc registerUsecase.IRegisterUsecase) *RegisterHandler {
 
 // Routing for register handler
 func (handler *RegisterHandler) Router(r *gin.RouterGroup) {
-	r.POST("api/v1/register", handler.Register)
+	r.POST("register", handler.Register)
 }
 
 // Function for handling register
