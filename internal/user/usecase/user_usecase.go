@@ -17,6 +17,7 @@ type IUserUseCase interface {
 	FindById(id int) (*entity.User, *response.ErrorResp)
 	FindByEmail(email string) (*entity.User, *response.ErrorResp)
 	Create(dto dto.UserRequestBody) (*entity.User, *response.ErrorResp)
+	Update(id int, dto dto.UserUpdateRequest) (*entity.User, *response.ErrorResp)
 	Delete(id int) *response.ErrorResp
 }
 
@@ -73,6 +74,38 @@ func (usecase *userUseCase) Create(dto dto.UserRequestBody) (*entity.User, *resp
 	return userData, nil
 }
 
+// Update user by ID
+func (usecase *userUseCase) Update(id int, dto dto.UserUpdateRequest) (*entity.User, *response.ErrorResp) {
+	user, err := usecase.repository.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// If  password is passed via dto
+	if dto.Password != nil {
+		// Generate new password
+		hashedPassword, err := hasher.GeneratePassword(*dto.Password)
+		if err != nil {
+			return nil, &response.ErrorResp{
+				Code:    500,
+				Err:     err,
+				Message: "Failed to update user data",
+			}
+		}
+
+		// Update user struct
+		user.Password = hashedPassword
+	}
+
+	// Update user via repo
+	user, err = usecase.repository.Update(*user)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 // Delete implements IUserUseCase.
 func (usecase *userUseCase) Delete(id int) *response.ErrorResp {
 	panic("unimplemented")
@@ -90,7 +123,7 @@ func (usecase *userUseCase) FindByEmail(email string) (*entity.User, *response.E
 
 // FindById implements IUserUseCase.
 func (usecase *userUseCase) FindById(id int) (*entity.User, *response.ErrorResp) {
-	panic("unimplemented")
+	return usecase.repository.FindById(id)
 }
 
 func NewUserUseCase(repo repository.IUserRepo) IUserUseCase {

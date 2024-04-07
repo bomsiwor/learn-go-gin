@@ -2,6 +2,7 @@ package mail
 
 import (
 	"fmt"
+	forgot_password "golang-bootcamp-1/internal/forgot-password/dto"
 	register "golang-bootcamp-1/internal/register/dto"
 	globalMail "golang-bootcamp-1/pkg/mail"
 	"log"
@@ -15,6 +16,21 @@ type mailUsecase struct {
 
 func NewMailUsecase() globalMail.IMail {
 	return &mailUsecase{}
+}
+
+// SendForgotPassword implements mail.IMail.
+func (uc *mailUsecase) SendForgotPassword(to string, data forgot_password.ForgotPasswordEmailBody) {
+	// Get email template path
+	path := globalMail.GetMailTemplateFile("forgot_password_email.html")
+
+	// Parse
+	result, err := globalMail.ParseEmailHTML(path, data)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Send mail
+	uc.SendMail(to, data.Subject, result)
 }
 
 // SendVerification implements mail.IMail.

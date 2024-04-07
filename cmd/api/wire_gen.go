@@ -7,6 +7,9 @@
 package main
 
 import (
+	forgot_password2 "golang-bootcamp-1/internal/forgot-password/repository"
+	"golang-bootcamp-1/internal/forgot-password/transport/http"
+	forgot_password3 "golang-bootcamp-1/internal/forgot-password/usecase"
 	oauth2 "golang-bootcamp-1/internal/oauth/repository"
 	"golang-bootcamp-1/internal/oauth/transport/http"
 	oauth3 "golang-bootcamp-1/internal/oauth/usecase"
@@ -33,4 +36,12 @@ func InitializeOauthHandler(db *gorm.DB, userUc usecase.IUserUseCase) *oauth.Oau
 	iOauthUseCase := oauth3.NewOauthUseCase(iOauthClientRepo, iOauthAccessTokenRepo, iOauthRefreshTokenRepo, userUc)
 	oauthHandler := oauth.NewOauthHandler(iOauthUseCase)
 	return oauthHandler
+}
+
+func InitializeForgotPasswordHanlder(db *gorm.DB, userUc usecase.IUserUseCase) *forgot_password.ForgotPasswordHandler {
+	iForgotPasswordRepo := forgot_password2.NewForgotPasswordRepository(db)
+	iMail := mail.NewMailUsecase()
+	iForgotPasswordUsecase := forgot_password3.NewForgotPasswordUsecase(iForgotPasswordRepo, userUc, iMail)
+	forgotPasswordHandler := forgot_password.NewForgotPasswordHandler(iForgotPasswordUsecase)
+	return forgotPasswordHandler
 }
