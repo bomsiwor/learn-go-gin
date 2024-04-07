@@ -2,6 +2,7 @@ package mail
 
 import (
 	"bytes"
+	forgotPasswordDto "golang-bootcamp-1/internal/forgot-password/dto"
 	registerDto "golang-bootcamp-1/internal/register/dto"
 	"html/template"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 type IMail interface {
 	SendVerification(to string, data registerDto.EmailVerification)
+	SendForgotPassword(to string, data forgotPasswordDto.ForgotPasswordEmailBody)
 	SendMail(to string, subject string, content string)
 }
 

@@ -2,12 +2,9 @@ package main
 
 import (
 	"golang-bootcamp-1/config"
-	userRepo "golang-bootcamp-1/internal/user/repository"
-	userUC "golang-bootcamp-1/internal/user/usecase"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"gorm.io/gorm"
 	// _ "github.com/joho/godotenv/autoload"
 )
 
@@ -34,15 +31,8 @@ func main() {
 			ctx.JSON(200, "Hello world!")
 		})
 	}
+	// Ini handler from routes
 	initHandler(db, v1)
 
 	r.Run("127.0.0.1:8082")
-}
-
-func initHandler(db *gorm.DB, router *gin.RouterGroup) {
-	userRepo := userRepo.NewUserRepo(db)
-	userUc := userUC.NewUserUseCase(userRepo)
-
-	InitializeRegisterHandler(db, userUc).Router(router)
-	InitializeOauthHandler(db, userUc).Router(router)
 }

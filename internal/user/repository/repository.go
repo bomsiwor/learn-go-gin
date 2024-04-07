@@ -13,11 +13,25 @@ type IUserRepo interface {
 	FindById(id int) (*entity.User, *response.ErrorResp)
 	FindByEmail(email string) (*entity.User, *response.ErrorResp)
 	Create(entity entity.User) (*entity.User, *response.ErrorResp)
+	Update(entity entity.User) (*entity.User, *response.ErrorResp)
 	Delete(id int) *response.ErrorResp
 }
 
 type userRepository struct {
 	db *gorm.DB
+}
+
+// Update implements IUserRepo.
+func (repo *userRepository) Update(entity entity.User) (*entity.User, *response.ErrorResp) {
+	if err := repo.db.Save(&entity).Error; err != nil {
+		return nil, &response.ErrorResp{
+			Code:    500,
+			Err:     err,
+			Message: err.Error(),
+		}
+	}
+
+	return &entity, nil
 }
 
 // Create implements IUserRepo.
@@ -57,7 +71,7 @@ func (repo *userRepository) FindByEmail(email string) (*entity.User, *response.E
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, &response.ErrorResp{
 				Code:    404,
-				Message: err.Error(),
+				Message: "User not found",
 				Err:     err,
 			}
 		}
