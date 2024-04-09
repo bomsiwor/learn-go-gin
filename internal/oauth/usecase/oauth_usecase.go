@@ -2,7 +2,7 @@ package oauth
 
 import (
 	"errors"
-	"fmt"
+	adminUsecase "golang-bootcamp-1/internal/admin/usecase"
 	dto "golang-bootcamp-1/internal/oauth/dto"
 	entity "golang-bootcamp-1/internal/oauth/entity"
 	repository "golang-bootcamp-1/internal/oauth/repository"
@@ -25,31 +25,46 @@ type oauthUseCase struct {
 	oauthAccessToken  repository.IOauthAccessTokenRepo
 	oauthRefreshToken repository.IOauthRefreshTokenRepo
 	userUsecase       userUsecase.IUserUseCase
+	adminUsecase      adminUsecase.IAdminUsecase
 }
 
 // Login implements IOauthUseCase.
 func (uc *oauthUseCase) Login(request dto.LoginRequest) (*dto.LoginResponse, *response.ErrorResp) {
 	// Check wheter client ID & secret is valid
-	fmt.Println(request)
 	oauthClient, err := uc.oauthClient.FindByClientIdAndClientSecret(request.ClientID, request.ClientSecret)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check user data
+	// Check user, wheter it is admin or user
 	var user dto.UserResponse
+	if oauthClient.Name == "web-admin" {
+		//Check admin data
+		adminData, err := uc.adminUsecase.FindByEmail(request.Email)
+		if err != nil {
+			return nil, err
+		}
 
-	userData, err := uc.userUsecase.FindByEmail(request.Email)
-	if err != nil {
-		return nil, err
+		// Do not mutate data from repo / query
+		// Copy it on another DTO
+		user.ID = adminData.ID
+		user.Email = adminData.Email
+		user.Name = adminData.Name
+		user.Password = adminData.Password
+	} else {
+		// Check user data
+		userData, err := uc.userUsecase.FindByEmail(request.Email)
+		if err != nil {
+			return nil, err
+		}
+
+		// Do not mutate data from repo / query
+		// Copy it on another DTO
+		user.ID = userData.ID
+		user.Email = userData.Email
+		user.Name = userData.Name
+		user.Password = userData.Password
 	}
-
-	// Do not mutate data from repo / query
-	// Copy it on another DTO
-	user.ID = userData.ID
-	user.Email = userData.Email
-	user.Name = userData.Name
-	user.Password = userData.Password
 
 	// Check password
 	// Dont proceed if passwrod wrong
@@ -140,11 +155,13 @@ func NewOauthUseCase(
 	accessToken repository.IOauthAccessTokenRepo,
 	refreshToken repository.IOauthRefreshTokenRepo,
 	userUseCase userUsecase.IUserUseCase,
+	adminUsecase adminUsecase.IAdminUsecase,
 ) IOauthUseCase {
 	return &oauthUseCase{
 		oauthClient:       client,
 		oauthAccessToken:  accessToken,
 		oauthRefreshToken: refreshToken,
 		userUsecase:       userUseCase,
+		adminUsecase:      adminUsecase,
 	}
 }

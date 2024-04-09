@@ -7,9 +7,9 @@
 package main
 
 import (
-	admin2 "golang-bootcamp-1/internal/admin/repository"
-	"golang-bootcamp-1/internal/admin/transport/http"
-	admin3 "golang-bootcamp-1/internal/admin/usecase"
+	"golang-bootcamp-1/internal/admin/repository"
+	admin3 "golang-bootcamp-1/internal/admin/transport/http"
+	admin2 "golang-bootcamp-1/internal/admin/usecase"
 	forgot_password2 "golang-bootcamp-1/internal/forgot-password/repository"
 	"golang-bootcamp-1/internal/forgot-password/transport/http"
 	forgot_password3 "golang-bootcamp-1/internal/forgot-password/usecase"
@@ -36,7 +36,9 @@ func InitializeOauthHandler(db *gorm.DB, userUc usecase.IUserUseCase) *oauth.Oau
 	iOauthClientRepo := oauth2.NewOauthClientRepo(db)
 	iOauthAccessTokenRepo := oauth2.NewOauthAcces(db)
 	iOauthRefreshTokenRepo := oauth2.NewOauthRefreshTokenRepo(db)
-	iOauthUseCase := oauth3.NewOauthUseCase(iOauthClientRepo, iOauthAccessTokenRepo, iOauthRefreshTokenRepo, userUc)
+	iAdminRepository := admin.NewAdminRepository(db)
+	iAdminUsecase := admin2.NewAdminUsecase(iAdminRepository)
+	iOauthUseCase := oauth3.NewOauthUseCase(iOauthClientRepo, iOauthAccessTokenRepo, iOauthRefreshTokenRepo, userUc, iAdminUsecase)
 	oauthHandler := oauth.NewOauthHandler(iOauthUseCase)
 	return oauthHandler
 }
@@ -49,9 +51,9 @@ func InitializeForgotPasswordHanlder(db *gorm.DB, userUc usecase.IUserUseCase) *
 	return forgotPasswordHandler
 }
 
-func InitializeAdminHandler(db *gorm.DB) *admin.AdminHandler {
-	iAdminRepository := admin2.NewAdminRepository(db)
-	iAdminUsecase := admin3.NewAdminUsecase(iAdminRepository)
-	adminHandler := admin.NewAdminHandler(iAdminUsecase)
+func InitializeAdminHandler(db *gorm.DB) *admin3.AdminHandler {
+	iAdminRepository := admin.NewAdminRepository(db)
+	iAdminUsecase := admin2.NewAdminUsecase(iAdminRepository)
+	adminHandler := admin3.NewAdminHandler(iAdminUsecase)
 	return adminHandler
 }
