@@ -5,6 +5,9 @@
 package main
 
 import (
+	adminRepo "golang-bootcamp-1/internal/admin/repository"
+	adminH "golang-bootcamp-1/internal/admin/transport/http"
+	adminUc "golang-bootcamp-1/internal/admin/usecase"
 	forgotPasswordRepo "golang-bootcamp-1/internal/forgot-password/repository"
 	forgotPasswordH "golang-bootcamp-1/internal/forgot-password/transport/http"
 	forgotPasswordUc "golang-bootcamp-1/internal/forgot-password/usecase"
@@ -19,11 +22,6 @@ import (
 	"github.com/google/wire"
 	"gorm.io/gorm"
 )
-
-// func InitializeUserUsecase(db *gorm.DB) userUC.IUserUseCase {
-// 	wire.Build(userUC.NewUserUseCase, userRepo.NewUserRepo)
-// 	return userUC.IUserUseCase
-// }
 
 func InitializeRegisterHandler(db *gorm.DB, userUc userUC.IUserUseCase) *registerH.RegisterHandler {
 	wire.Build(registerH.NewRegisterHandler, registerUc.NewRegisterUseCase, mailUc.NewMailUsecase)
@@ -44,4 +42,14 @@ func InitializeForgotPasswordHanlder(db *gorm.DB, userUc userUC.IUserUseCase) *f
 	)
 
 	return &forgotPasswordH.ForgotPasswordHandler{}
+}
+
+func InitializeAdminHandler(db *gorm.DB) *adminH.AdminHandler {
+	wire.Build(
+		adminH.NewAdminHandler,
+		adminUc.NewAdminUsecase,
+		adminRepo.NewAdminRepository,
+	)
+
+	return &adminH.AdminHandler{}
 }
