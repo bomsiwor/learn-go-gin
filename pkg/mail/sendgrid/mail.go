@@ -1,6 +1,7 @@
 package mail
 
 import (
+	forgot_password "golang-bootcamp-1/internal/forgot-password/dto"
 	registerDto "golang-bootcamp-1/internal/register/dto"
 	globalMail "golang-bootcamp-1/pkg/mail"
 	"log"
@@ -16,6 +17,11 @@ type mailUsecase struct {
 
 func NewMailUsecase() globalMail.IMail {
 	return &mailUsecase{}
+}
+
+// SendForgotPassword implements mail.IMail.
+func (*mailUsecase) SendForgotPassword(to string, data forgot_password.ForgotPasswordEmailBody) {
+	panic("unimplemented")
 }
 
 // Send email verification
