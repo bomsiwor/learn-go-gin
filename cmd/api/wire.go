@@ -29,7 +29,15 @@ func InitializeRegisterHandler(db *gorm.DB, userUc userUC.IUserUseCase) *registe
 }
 
 func InitializeOauthHandler(db *gorm.DB, userUc userUC.IUserUseCase) *oauthH.OauthHandler {
-	wire.Build(oauthH.NewOauthHandler, oauthUC.NewOauthUseCase, oauthRepo.NewOauthRefreshTokenRepo, oauthRepo.NewOauthAcces, oauthRepo.NewOauthClientRepo)
+	wire.Build(
+		oauthH.NewOauthHandler,
+		oauthUC.NewOauthUseCase,
+		oauthRepo.NewOauthRefreshTokenRepo,
+		oauthRepo.NewOauthAcces,
+		oauthRepo.NewOauthClientRepo,
+		adminUc.NewAdminUsecase,
+		adminRepo.NewAdminRepository,
+	)
 	return &oauthH.OauthHandler{}
 }
 
