@@ -7,6 +7,9 @@
 package main
 
 import (
+	admin2 "golang-bootcamp-1/internal/admin/repository"
+	"golang-bootcamp-1/internal/admin/transport/http"
+	admin3 "golang-bootcamp-1/internal/admin/usecase"
 	forgot_password2 "golang-bootcamp-1/internal/forgot-password/repository"
 	"golang-bootcamp-1/internal/forgot-password/transport/http"
 	forgot_password3 "golang-bootcamp-1/internal/forgot-password/usecase"
@@ -44,4 +47,11 @@ func InitializeForgotPasswordHanlder(db *gorm.DB, userUc usecase.IUserUseCase) *
 	iForgotPasswordUsecase := forgot_password3.NewForgotPasswordUsecase(iForgotPasswordRepo, userUc, iMail)
 	forgotPasswordHandler := forgot_password.NewForgotPasswordHandler(iForgotPasswordUsecase)
 	return forgotPasswordHandler
+}
+
+func InitializeAdminHandler(db *gorm.DB) *admin.AdminHandler {
+	iAdminRepository := admin2.NewAdminRepository(db)
+	iAdminUsecase := admin3.NewAdminUsecase(iAdminRepository)
+	adminHandler := admin.NewAdminHandler(iAdminUsecase)
+	return adminHandler
 }
