@@ -3,6 +3,7 @@ package main
 import (
 	"golang-bootcamp-1/config"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	// _ "github.com/joho/godotenv/autoload"
@@ -10,6 +11,10 @@ import (
 
 func main() {
 	r := gin.Default()
+
+	// CORS config
+	cors := cors.Default()
+	r.Use(cors)
 
 	// Load env at main
 	// dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
