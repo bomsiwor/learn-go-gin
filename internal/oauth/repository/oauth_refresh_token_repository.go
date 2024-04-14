@@ -33,7 +33,16 @@ func (repo *oauthRefreshTokenRepo) Create(entity entity.OauthRefreshToken) (*ent
 
 // Delete implements IOauthRefreshTokenRepo.
 func (repo *oauthRefreshTokenRepo) Delete(entity entity.OauthRefreshToken) *response.ErrorResp {
-	panic("unimplemented")
+	err := repo.db.Delete(&entity).Error
+	if err != nil {
+		return &response.ErrorResp{
+			Code:    500,
+			Message: "Failed to invalidate token",
+			Err:     err,
+		}
+	}
+
+	return nil
 }
 
 // FindByOauthAccessTokenID implements IOauthRefreshTokenRepo.
@@ -43,7 +52,17 @@ func (repo *oauthRefreshTokenRepo) FindByOauthAccessTokenID(accessTokenId int) (
 
 // FindByToken implements IOauthRefreshTokenRepo.
 func (repo *oauthRefreshTokenRepo) FindByToken(token string) (*entity.OauthRefreshToken, *response.ErrorResp) {
-	panic("unimplemented")
+	var refreshToken entity.OauthRefreshToken
+
+	if err := repo.db.Where("token =?", token).Preload("OauthAccessToken.OauthClient").First(&refreshToken).Error; err != nil {
+		return nil, &response.ErrorResp{
+			Code:    500,
+			Err:     err,
+			Message: err.Error(),
+		}
+	}
+
+	return &refreshToken, nil
 }
 
 func NewOauthRefreshTokenRepo(db *gorm.DB) IOauthRefreshTokenRepo {

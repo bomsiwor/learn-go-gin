@@ -33,7 +33,15 @@ func (repo *oauthAccessTokenRepo) Create(entity entity.OauthAccessToken) (*entit
 
 // Delete implements IOauthAccessTokenRepo.
 func (repo *oauthAccessTokenRepo) Delete(entity entity.OauthAccessToken) *response.ErrorResp {
-	panic("unimplemented")
+	if err := repo.db.Delete(&entity).Error; err != nil {
+		return &response.ErrorResp{
+			Code:    500,
+			Message: "Failed to invalidate token",
+			Err:     err,
+		}
+	}
+
+	return nil
 }
 
 // FindByAccessToken implements IOauthAccessTokenRepo.
