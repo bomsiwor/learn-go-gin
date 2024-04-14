@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"golang-bootcamp-1/internal/middleware"
 	dto "golang-bootcamp-1/internal/oauth/dto"
 	usecase "golang-bootcamp-1/internal/oauth/usecase"
 	"golang-bootcamp-1/pkg/response"
@@ -20,7 +21,11 @@ func NewOauthHandler(usecase usecase.IOauthUseCase) *OauthHandler {
 }
 
 func (handler *OauthHandler) Router(r *gin.RouterGroup) {
-	r.POST("/oauths", handler.Login)
+	group := r.Group("oauth")
+	group.POST("login", handler.Login)
+	group.POST("refresh", handler.Refresh)
+
+	group.Use(middleware.JwtTokenCheck).GET("me", handler.Me)
 }
 
 func (handler *OauthHandler) Login(ctx *gin.Context) {
@@ -46,7 +51,11 @@ func (handler *OauthHandler) Login(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(
 			http.StatusForbidden,
-			err,
+			response.GenerateResponse(
+				err.Code,
+				err.Message,
+				err.Err.Error(),
+			),
 		)
 		ctx.Abort()
 		return
@@ -59,6 +68,73 @@ func (handler *OauthHandler) Login(ctx *gin.Context) {
 			http.StatusOK,
 			"Success login",
 			loginResponse,
+		),
+	)
+}
+
+func (handler *OauthHandler) Refresh(ctx *gin.Context) {
+	var request dto.RefreshTokenRequest
+
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			response.GenerateResponse(
+				http.StatusInternalServerError,
+				err.Error(),
+				nil,
+			),
+		)
+		ctx.Abort()
+		return
+	}
+
+	// Refresh token via usecase
+	result, err := handler.usecase.Refresh(request)
+	if err != nil {
+		ctx.JSON(
+			err.Code,
+			response.GenerateResponse(
+				err.Code,
+				err.Message,
+				err.Err.Error(),
+			),
+		)
+		ctx.Abort()
+		return
+	}
+
+	// Return success messsage if it OK!
+	ctx.JSON(
+		http.StatusOK,
+		response.GenerateResponse(
+			http.StatusOK,
+			"Success refresh token",
+			result,
+		),
+	)
+}
+
+func (handler *OauthHandler) Me(ctx *gin.Context) {
+	user, err := handler.usecase.Me(ctx.GetInt("user"), ctx.GetBool("isAdmin"))
+	if err != nil {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			response.GenerateResponse(
+				http.StatusInternalServerError,
+				err.Err.Error(),
+				nil,
+			),
+		)
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		response.GenerateResponse(
+			http.StatusOK,
+			"OK",
+			user,
 		),
 	)
 }
