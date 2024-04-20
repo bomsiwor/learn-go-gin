@@ -1,11 +1,13 @@
 package oauth
 
 import (
+	"fmt"
 	"golang-bootcamp-1/internal/middleware"
 	dto "golang-bootcamp-1/internal/oauth/dto"
 	usecase "golang-bootcamp-1/internal/oauth/usecase"
 	"golang-bootcamp-1/pkg/response"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +27,11 @@ func (handler *OauthHandler) Router(r *gin.RouterGroup) {
 	group.POST("login", handler.Login)
 	group.POST("refresh", handler.Refresh)
 
-	group.Use(middleware.JwtTokenCheck).GET("me", handler.Me)
+	group.Use(
+		middleware.JwtTokenCheck,
+		permissionMiddleware("create-admin"),
+	).
+		GET("me", handler.Me)
 }
 
 func (handler *OauthHandler) Login(ctx *gin.Context) {
@@ -137,4 +143,23 @@ func (handler *OauthHandler) Me(ctx *gin.Context) {
 			user,
 		),
 	)
+}
+
+func (handler *OauthHandler) Logout(ctx *gin.Context) {
+
+}
+
+func permissionMiddleware(permission ...string) func(c *gin.Context) {
+	questionMarksTmpl := make([]string, len(permission))
+	for i := range permission {
+		questionMarksTmpl[i] = "?"
+	}
+
+	questionMarks := strings.Join(questionMarksTmpl, ",")
+
+	_ = fmt.Sprintf("select * from users where permission in (%s)", questionMarks)
+
+	return func(c *gin.Context) {
+		c.Next()
+	}
 }
