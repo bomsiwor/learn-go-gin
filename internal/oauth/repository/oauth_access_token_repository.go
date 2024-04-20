@@ -46,7 +46,17 @@ func (repo *oauthAccessTokenRepo) Delete(entity entity.OauthAccessToken) *respon
 
 // FindByAccessToken implements IOauthAccessTokenRepo.
 func (repo *oauthAccessTokenRepo) FindByAccessToken(token string) (*entity.OauthAccessToken, *response.ErrorResp) {
-	panic("unimplemented")
+	var accessToken entity.OauthAccessToken
+
+	if err := repo.db.Where("token = ?", token).First(&accessToken).Error; err != nil {
+		return nil, &response.ErrorResp{
+			Err:     err,
+			Message: "Token invalid",
+			Code:    401,
+		}
+	}
+
+	return &accessToken, nil
 }
 
 func NewOauthAcces(db *gorm.DB) IOauthAccessTokenRepo {

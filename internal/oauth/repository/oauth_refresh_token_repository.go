@@ -47,7 +47,17 @@ func (repo *oauthRefreshTokenRepo) Delete(entity entity.OauthRefreshToken) *resp
 
 // FindByOauthAccessTokenID implements IOauthRefreshTokenRepo.
 func (repo *oauthRefreshTokenRepo) FindByOauthAccessTokenID(accessTokenId int) (*entity.OauthRefreshToken, *response.ErrorResp) {
-	panic("unimplemented")
+	var refreshToken entity.OauthRefreshToken
+
+	if err := repo.db.Where("oauth_access_token_id = ?", accessTokenId).First(&refreshToken).Error; err != nil {
+		return nil, &response.ErrorResp{
+			Code:    401,
+			Err:     err,
+			Message: "Token invalid",
+		}
+	}
+
+	return &refreshToken, nil
 }
 
 // FindByToken implements IOauthRefreshTokenRepo.
