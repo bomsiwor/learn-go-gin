@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"errors"
 	entity "golang-bootcamp-1/internal/oauth/entity"
 	"golang-bootcamp-1/pkg/response"
 
@@ -23,7 +24,7 @@ func (repo *oauthAccessTokenRepo) Create(entity entity.OauthAccessToken) (*entit
 	if err := repo.db.Create(&entity).Error; err != nil {
 		return nil, &response.ErrorResp{
 			Code:    500,
-			Err:     err,
+			Err:     errors.New("failed to generate token"),
 			Message: err.Error(),
 		}
 	}
@@ -49,6 +50,14 @@ func (repo *oauthAccessTokenRepo) FindByAccessToken(token string) (*entity.Oauth
 	var accessToken entity.OauthAccessToken
 
 	if err := repo.db.Where("token = ?", token).First(&accessToken).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, &response.ErrorResp{
+				Err:     err,
+				Message: "Invalid credential / token",
+				Code:    401,
+			}
+		}
+
 		return nil, &response.ErrorResp{
 			Err:     err,
 			Message: "Token invalid",

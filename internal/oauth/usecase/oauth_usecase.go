@@ -17,6 +17,7 @@ import (
 
 type IOauthUseCase interface {
 	Login(request dto.LoginRequest) (*dto.LoginResponse, *response.ErrorResp)
+	Logout(token string) *response.ErrorResp
 	Refresh(request dto.RefreshTokenRequest) (*dto.LoginResponse, *response.ErrorResp)
 	Me(id int, isAdmin bool) (*userDto.UserMeResponse, *response.ErrorResp)
 }
@@ -27,6 +28,34 @@ type oauthUseCase struct {
 	oauthRefreshToken repository.IOauthRefreshTokenRepo
 	userUsecase       userUsecase.IUserUseCase
 	adminUsecase      adminUsecase.IAdminUsecase
+}
+
+// Logout implements IOauthUseCase.
+func (uc *oauthUseCase) Logout(token string) *response.ErrorResp {
+	// Search access token data by token
+	// Delete after date retrieved
+	accessToken, err := uc.oauthAccessToken.FindByAccessToken(token)
+	if err != nil {
+		return err
+	}
+
+	// Delete access token
+	err = uc.oauthAccessToken.Delete(*accessToken)
+	if err != nil {
+		return err
+	}
+
+	// Delete refresh token
+	refreshToken, err := uc.oauthRefreshToken.FindByOauthAccessTokenID(accessToken.ID)
+	if err != nil {
+		return err
+	}
+	err = uc.oauthRefreshToken.Delete(*refreshToken)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Get current user login data
@@ -147,11 +176,7 @@ func (uc *oauthUseCase) Login(request dto.LoginRequest) (*dto.LoginResponse, *re
 
 	oauthAccessToken, errAccessToken := uc.oauthAccessToken.Create(oauthAccessTokenData)
 	if errAccessToken != nil {
-		return nil, &response.ErrorResp{
-			Code:    500,
-			Err:     err.Err,
-			Message: err.Err.Error(),
-		}
+		return nil, errAccessToken
 	}
 
 	// Insert into refresh token

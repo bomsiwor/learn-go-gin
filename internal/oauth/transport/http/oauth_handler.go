@@ -27,11 +27,14 @@ func (handler *OauthHandler) Router(r *gin.RouterGroup) {
 	group.POST("login", handler.Login)
 	group.POST("refresh", handler.Refresh)
 
-	group.Use(
+	// Restrict Routes
+	restrictGroup := group.Use(
 		middleware.JwtTokenCheck,
 		permissionMiddleware("create-admin"),
-	).
-		GET("me", handler.Me)
+	)
+
+	restrictGroup.GET("me", handler.Me)
+	restrictGroup.POST("logout", handler.Logout)
 }
 
 func (handler *OauthHandler) Login(ctx *gin.Context) {
@@ -59,8 +62,8 @@ func (handler *OauthHandler) Login(ctx *gin.Context) {
 			http.StatusForbidden,
 			response.GenerateResponse(
 				err.Code,
-				err.Message,
 				err.Err.Error(),
+				err.Message,
 			),
 		)
 		ctx.Abort()
@@ -146,7 +149,32 @@ func (handler *OauthHandler) Me(ctx *gin.Context) {
 }
 
 func (handler *OauthHandler) Logout(ctx *gin.Context) {
+	// Get token from context
+	token := ctx.GetString("token")
 
+	// Handler logout via usecase
+	err := handler.usecase.Logout(token)
+	if err != nil {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			response.GenerateResponse(
+				http.StatusInternalServerError,
+				err.Message,
+				nil,
+			),
+		)
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		response.GenerateResponse(
+			http.StatusOK,
+			"Sukses logout",
+			nil,
+		),
+	)
 }
 
 func permissionMiddleware(permission ...string) func(c *gin.Context) {

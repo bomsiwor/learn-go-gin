@@ -68,7 +68,7 @@ func (repo *oauthRefreshTokenRepo) FindByToken(token string) (*entity.OauthRefre
 		return nil, &response.ErrorResp{
 			Code:    500,
 			Err:     err,
-			Message: err.Error(),
+			Message: "Refresh token invalid",
 		}
 	}
 

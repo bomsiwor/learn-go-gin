@@ -44,6 +44,7 @@ func JwtTokenCheck(c *gin.Context) {
 	// Set user id to context
 	c.Set("user", claim.ID)
 	c.Set("isAdmin", claim.IsAdmin)
+	c.Set("token", token)
 
 	c.Next()
 }
