@@ -16,4 +16,5 @@ func initHandler(db *gorm.DB, router *gin.RouterGroup) {
 	InitializeOauthHandler(db, userUc).Router(router)
 	InitializeForgotPasswordHanlder(db, userUc).Router(router)
 	InitializeAdminHandler(db).Router(router)
+	InitializeProductCategoryHandler(db).Router(router)
 }

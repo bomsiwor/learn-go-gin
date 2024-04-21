@@ -16,10 +16,14 @@ import (
 	oauth2 "golang-bootcamp-1/internal/oauth/repository"
 	"golang-bootcamp-1/internal/oauth/transport/http"
 	oauth3 "golang-bootcamp-1/internal/oauth/usecase"
+	product_category2 "golang-bootcamp-1/internal/product-category/repository"
+	"golang-bootcamp-1/internal/product-category/transport/http"
+	product_category3 "golang-bootcamp-1/internal/product-category/usecase"
 	"golang-bootcamp-1/internal/register/transport/http"
 	register2 "golang-bootcamp-1/internal/register/usecase"
 	"golang-bootcamp-1/internal/user/usecase"
 	"golang-bootcamp-1/pkg/mail/mailtrap"
+	"golang-bootcamp-1/pkg/media/cloudinary"
 	"gorm.io/gorm"
 )
 
@@ -56,4 +60,12 @@ func InitializeAdminHandler(db *gorm.DB) *admin3.AdminHandler {
 	iAdminUsecase := admin2.NewAdminUsecase(iAdminRepository)
 	adminHandler := admin3.NewAdminHandler(iAdminUsecase)
 	return adminHandler
+}
+
+func InitializeProductCategoryHandler(db *gorm.DB) *product_category.ProductCategoryHandler {
+	iProductCategory := product_category2.NewProductCategoryRepository(db)
+	iMedia := media.NewMediaUsecase()
+	iProductCategoryUsecase := product_category3.NewProductCategoryUsecase(iProductCategory, iMedia)
+	productCategoryHandler := product_category.NewProductCategoryHandler(iProductCategoryUsecase)
+	return productCategoryHandler
 }

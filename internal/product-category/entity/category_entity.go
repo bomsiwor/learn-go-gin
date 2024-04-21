@@ -13,7 +13,7 @@ type ProductCategory struct {
 	Image       string       `gorm:"size:255" json:"image" `
 	CreatedById *int64       `gorm:"not null;column:created_by" json:"createdById"`
 	CreatedBy   *admin.Admin `json:"createdBy" gorm:"foreignKey:CreatedById;references:ID"`
-	UpdatedById *int64       `json:"updatedById"`
+	UpdatedById *int64       `json:"updatedById" gorm:"column:updated_by"`
 	UpdatedBy   *admin.Admin `json:"updatedBy" gorm:"foreignKey:UpdatedById;references:ID"`
 	CreatedAt   *time.Time   `json:"createdAt"`
 	UpdatedAt   *time.Time   `json:"updatedAt"`

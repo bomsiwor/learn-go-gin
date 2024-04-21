@@ -6,7 +6,7 @@ import (
 )
 
 type IMedia interface {
-	Upload(src *multipart.FileHeader, location string) (*string, *response.ErrorResp)
+	Upload(src *multipart.FileHeader, location string) (string, *response.ErrorResp)
 	UpdateFile(identifier string) *response.ErrorResp
 	DeleteFile(identifier string) *response.ErrorResp
 }

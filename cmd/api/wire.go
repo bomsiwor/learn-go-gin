@@ -14,10 +14,14 @@ import (
 	oauthRepo "golang-bootcamp-1/internal/oauth/repository"
 	oauthH "golang-bootcamp-1/internal/oauth/transport/http"
 	oauthUC "golang-bootcamp-1/internal/oauth/usecase"
+	productCategoryRepo "golang-bootcamp-1/internal/product-category/repository"
+	productCategoryH "golang-bootcamp-1/internal/product-category/transport/http"
+	productCategoryUc "golang-bootcamp-1/internal/product-category/usecase"
 	registerH "golang-bootcamp-1/internal/register/transport/http"
 	registerUc "golang-bootcamp-1/internal/register/usecase"
 	userUC "golang-bootcamp-1/internal/user/usecase"
 	mailUc "golang-bootcamp-1/pkg/mail/mailtrap"
+	mediaUc "golang-bootcamp-1/pkg/media/cloudinary"
 
 	"github.com/google/wire"
 	"gorm.io/gorm"
@@ -60,4 +64,15 @@ func InitializeAdminHandler(db *gorm.DB) *adminH.AdminHandler {
 	)
 
 	return &adminH.AdminHandler{}
+}
+
+func InitializeProductCategoryHandler(db *gorm.DB) *productCategoryH.ProductCategoryHandler {
+	wire.Build(
+		productCategoryH.NewProductCategoryHandler,
+		productCategoryUc.NewProductCategoryUsecase,
+		mediaUc.NewMediaUsecase,
+		productCategoryRepo.NewProductCategoryRepository,
+	)
+
+	return &productCategoryH.ProductCategoryHandler{}
 }

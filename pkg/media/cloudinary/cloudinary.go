@@ -6,10 +6,12 @@ import (
 	"golang-bootcamp-1/pkg/response"
 	"mime/multipart"
 	"os"
+	"strings"
 
 	cldPkg "github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
+	"github.com/google/uuid"
 )
 
 type mediaUsecase struct {
@@ -39,7 +41,7 @@ func (*mediaUsecase) UpdateFile(identifier string) *response.ErrorResp {
 }
 
 // Upload implements media.IMedia.
-func (*mediaUsecase) Upload(src *multipart.FileHeader, location string) (*string, *response.ErrorResp) {
+func (*mediaUsecase) Upload(src *multipart.FileHeader, location string) (string, *response.ErrorResp) {
 	// Init connection
 	cld, ctx := startConn()
 
@@ -48,7 +50,7 @@ func (*mediaUsecase) Upload(src *multipart.FileHeader, location string) (*string
 
 	file, err := src.Open()
 	if err != nil {
-		return nil, &response.ErrorResp{
+		return "", &response.ErrorResp{
 			Code:    500,
 			Message: "Error proccessing file",
 			Err:     err,
@@ -58,24 +60,25 @@ func (*mediaUsecase) Upload(src *multipart.FileHeader, location string) (*string
 	defer file.Close()
 
 	// Uplaod file using uploader
+	publicId := strings.Join([]string{location, uuid.NewString()}, "/")
 	if file != nil {
 		resp, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{
-			PublicID:       "test/" + src.Filename,
+			PublicID:       publicId,
 			UniqueFilename: api.Bool(false),
 			Overwrite:      api.Bool(true),
 		})
 		if err != nil {
-			return nil, &response.ErrorResp{
+			return "", &response.ErrorResp{
 				Code:    500,
 				Message: "Error proccessing file",
 				Err:     err,
 			}
 		}
 
-		return &resp.SecureURL, nil
+		return resp.SecureURL, nil
 	}
 
-	return nil, &response.ErrorResp{
+	return "", &response.ErrorResp{
 		Code:    500,
 		Message: "Error proccessing file",
 		Err:     err,
