@@ -32,7 +32,22 @@ func startConn() (*cldPkg.Cloudinary, context.Context) {
 
 // DeleteFile implements media.IMedia.
 func (*mediaUsecase) DeleteFile(identifier string) *response.ErrorResp {
-	panic("unimplemented")
+	// Init connection
+	cld, ctx := startConn()
+
+	_, err := cld.Upload.Destroy(ctx, uploader.DestroyParams{
+		PublicID: identifier,
+	})
+
+	if err != nil {
+		return &response.ErrorResp{
+			Code:    500,
+			Err:     err,
+			Message: err.Error(),
+		}
+	}
+
+	return nil
 }
 
 // UpdateFile implements media.IMedia.
@@ -41,7 +56,7 @@ func (*mediaUsecase) UpdateFile(identifier string) *response.ErrorResp {
 }
 
 // Upload implements media.IMedia.
-func (*mediaUsecase) Upload(src *multipart.FileHeader, location string) (string, *response.ErrorResp) {
+func (*mediaUsecase) Upload(src *multipart.FileHeader, location string) (*globalMedia.RemoteResponse, *response.ErrorResp) {
 	// Init connection
 	cld, ctx := startConn()
 
@@ -50,7 +65,7 @@ func (*mediaUsecase) Upload(src *multipart.FileHeader, location string) (string,
 
 	file, err := src.Open()
 	if err != nil {
-		return "", &response.ErrorResp{
+		return nil, &response.ErrorResp{
 			Code:    500,
 			Message: "Error proccessing file",
 			Err:     err,
@@ -68,17 +83,20 @@ func (*mediaUsecase) Upload(src *multipart.FileHeader, location string) (string,
 			Overwrite:      api.Bool(true),
 		})
 		if err != nil {
-			return "", &response.ErrorResp{
+			return nil, &response.ErrorResp{
 				Code:    500,
 				Message: "Error proccessing file",
 				Err:     err,
 			}
 		}
 
-		return resp.SecureURL, nil
+		return &globalMedia.RemoteResponse{
+			Url:        &resp.SecureURL,
+			Identifier: &resp.PublicID,
+		}, nil
 	}
 
-	return "", &response.ErrorResp{
+	return nil, &response.ErrorResp{
 		Code:    500,
 		Message: "Error proccessing file",
 		Err:     err,

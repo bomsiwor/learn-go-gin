@@ -42,7 +42,8 @@ func (uc *productCategoryUsecase) Create(request dto.ProducteCategoryRequest) (*
 			return nil, err
 		}
 		// If upload succeeded, store url
-		productCategory.Image = image
+		productCategory.Image = *image.Url
+		productCategory.FileIdentifier = image.Identifier
 	}
 
 	// Store to database
