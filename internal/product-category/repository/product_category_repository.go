@@ -7,6 +7,7 @@ import (
 	"golang-bootcamp-1/pkg/utils"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type IProductCategory interface {
@@ -51,7 +52,9 @@ func (repo *productCategoryRepository) Delete(entity entity.ProductCategory) *re
 func (repo *productCategoryRepository) FindAll(page int, limit int) []entity.ProductCategory {
 	var productCategories []entity.ProductCategory
 
-	repo.db.Scopes(utils.Paginate(page, limit)).Find(&productCategories)
+	repo.db.Scopes(utils.Paginate(page, limit)).Preload("CreatedBy", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id", "name")
+	}).Find(&productCategories)
 
 	return productCategories
 }
@@ -60,7 +63,7 @@ func (repo *productCategoryRepository) FindAll(page int, limit int) []entity.Pro
 func (repo *productCategoryRepository) FindById(id int) (*entity.ProductCategory, *response.ErrorResp) {
 	var productCategory entity.ProductCategory
 
-	if err := repo.db.Where("id = ?", id).First(&productCategory).Error; err != nil {
+	if err := repo.db.Where("id = ?", id).Preload(clause.Associations).First(&productCategory).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, &response.ErrorResp{
 				Code:    404,

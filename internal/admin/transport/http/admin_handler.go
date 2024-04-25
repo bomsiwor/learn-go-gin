@@ -3,6 +3,7 @@ package admin
 import (
 	dto "golang-bootcamp-1/internal/admin/dto"
 	uc "golang-bootcamp-1/internal/admin/usecase"
+	"golang-bootcamp-1/internal/middleware"
 	"golang-bootcamp-1/pkg/response"
 	"net/http"
 	"strconv"
@@ -21,7 +22,9 @@ func NewAdminHandler(uc uc.IAdminUsecase) *AdminHandler {
 }
 
 func (h *AdminHandler) Router(r *gin.RouterGroup) {
-	group := r.Group("admin")
+	group := r.Group("admin").
+		Use(middleware.IsAdmin)
+
 	group.GET("", h.FindAll)
 	group.GET(":id", h.FindByID)
 	group.GET("total", h.TotalCountAdmin)

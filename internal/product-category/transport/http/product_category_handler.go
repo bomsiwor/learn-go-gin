@@ -22,7 +22,9 @@ func NewProductCategoryHandler(usecase usecase.IProductCategoryUsecase) *Product
 }
 
 func (h *ProductCategoryHandler) Router(r *gin.RouterGroup) {
-	group := r.Group("product-category").Use(middleware.JwtTokenCheck)
+	group := r.Group("product-category").
+		Use(middleware.JwtTokenCheck).
+		Use(middleware.IsAdmin)
 
 	group.GET("/", h.FindAll)
 	group.GET(":id", h.FindById)
