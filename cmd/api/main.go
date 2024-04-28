@@ -2,6 +2,8 @@ package main
 
 import (
 	"golang-bootcamp-1/config"
+	"golang-bootcamp-1/pkg/response"
+	"net/http"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -38,6 +40,18 @@ func main() {
 	}
 	// Ini handler from routes
 	initHandler(db, v1)
+
+	// Handle no route
+	r.NoRoute(func(ctx *gin.Context) {
+		ctx.JSON(
+			http.StatusNotFound,
+			response.GenerateResponse(
+				http.StatusNotFound,
+				"Resource not found",
+				nil,
+			),
+		)
+	})
 
 	r.Run("127.0.0.1:8082")
 }
